@@ -1,12 +1,60 @@
 ﻿@inherits LayoutComponentBase
 <div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
-
+   
     <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+        <div class="top-menu">
+            <div class="left-side">
+                <button type="button" class="btn-none btn-url-logo">
+                    <span class="url-logo"><URLShortener_Client.Icons.UrlLogo Width="50" Height="50" /></span>
+                    <span class="app-name">UrLink</span>
+                </button>
+            </div>
+            <div class="right-side">
+                @if(Vs.AuthInfo == null)
+                {
+                    <button class="btn-none btn-signin" @onclick="OpenLoginModal">
+                        <span class="font-color"><URLShortener_Client.Icons.SignInIcon Width="25" Height="25" /></span>
+                        <span class="font-color">Sign In</span>
+                    </button>
+                    <button class="btn-none btn-signup">
+                        <span class="text-light"><URLShortener_Client.Icons.SignUpIcon Width="25" Height="25" /></span>
+                        <span class="text-light">Sign Up</span>
+                    </button>
+                }
+                else //if user is a registered user
+                {
+                    <div class="position-relative">
+                        <button type="button" class="btn-none btn-user" @onclick="ToggleUserMenu">
+                            <div class="user-icon">
+                                <URLShortener_Client.Icons.UserIcon Width="25" Height="25" />
+                            </div>
+                            <div class="user-info">
+                                <div class="user-info-name">@Vs.AuthInfo.UserName</div>
+                                @* <div class="user-info-email">@Vs.AuthInfo.Email</div> *@
+                            </div>
+                        </button>
+                        @if (isOpenUserMenu)
+                        {
+                            <div class="user-menu">
+                                <div class="user-menu-item">
+                                    <button type="button" class="btn-none user-menu-btn">
+                                        <URLShortener_Client.Icons.GraphIcon Width="20" Height="20" />
+                                        Analytics
+                                    </button>
+                                </div>
+                                <div class="user-menu-item">
+                                    <button type="button" class="btn-none user-menu-btn">
+                                        <URLShortener_Client.Icons.LogoutIcon Width="20" Height="20" />
+                                        Log Out
+                                    </button>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                    
+                }
+
+            </div>
         </div>
 
         <article class="content px-4">
@@ -14,3 +62,32 @@
         </article>
     </main>
 </div>
+<Modal @ref="modal" ModalBodyCss="p-30px">
+    <ModalBody>
+        @if (isOpenLoginModal)
+        {
+            <URLShortener_Client.Pages.User.SignIn OnModalClose="CloseLoginModal"></URLShortener_Client.Pages.User.SignIn>
+        }
+
+    </ModalBody>
+</Modal>
+
+@code{
+
+    private Modal modal = new();
+    private bool isOpenLoginModal,isOpenUserMenu;
+    private async Task CloseLoginModal()
+    {
+        isOpenLoginModal = false;
+        await modal.Close();
+    }
+    private async Task OpenLoginModal()
+    {
+        isOpenLoginModal = true;
+        await modal.Open();
+    }
+    private void ToggleUserMenu()
+    {
+        isOpenUserMenu = !isOpenUserMenu;
+    }
+}

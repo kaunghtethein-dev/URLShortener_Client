@@ -1,0 +1,69 @@
+﻿<div class="d-flex justify-content-end">
+    <button type="button" class="btn-none font-color" @onclick='() => { OnModalClose.InvokeAsync(); }'><URLShortener_Client.Icons.CrossIcon Width="20" Height="20" /></button>
+</div>
+<h1 class="mb-1 fw-bold">Welcome Back</h1>
+<div class="font-color fs-20px">Sign in to access your analytics</div>
+
+<div class="login-input-form">
+    <div class="input-container">
+        <div class="form-input-title">Email Address</div>
+        <div>
+            <input @bind="loginParam.Email" class="text-input" type="text" placeholder="you@example.com"/>
+        </div>
+    </div>
+    <div class="input-container">
+        <div class="form-input-title">Password</div>
+        <div>
+            <input @bind="loginParam.Password" class="text-input" type="password" placeholder="Enter your password" />
+        </div>
+    </div>
+    <div class="signin-btn-container">
+        <button type="button" class="btn-primary-signin" @onclick="LogIn">Sign In</button>
+    </div>
+    <div class="sign-in-footer">
+        Don't have an account? <button class="btn-none btn-signup-link">Sign Up</button>
+    </div>
+</div>
+@code {
+    [Parameter]
+    public EventCallback OnModalClose { get; set; }
+
+    private Dto_LoginUser loginParam = new();
+
+    private async Task LogIn()
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("console.log", "login request => ", loginParam);
+            var result = await ApiClient.PostAsync<DataResult<Dto_AuthResponse>>("api/user/login", loginParam);
+            await JS.InvokeVoidAsync("console.log", "login response => ", result);
+            if (result != null && result.Success && result.Data != null)
+            {
+                // Convert Dto_AuthResponse to AuthInfo
+                var authInfo = new AuthInfo
+                {
+                    AccessToken = result.Data.AccessToken,
+                    RefreshToken = result.Data.RefreshToken,
+                    AccessTokenExpiresAt = result.Data.AccessTokenExpiresAt,
+                    UserName = result.Data.UserName,
+                    Email = result.Data.Email,
+                    UserId = result.Data.UserId
+                };
+
+                // Save globally
+                await Vs.SaveAuthInfoAsync(authInfo);
+                await JS.InvokeVoidAsync("console.log", "AuthInfo => ", Vs.AuthInfo);
+                await OnModalClose.InvokeAsync();
+                
+            }
+            else
+            {
+                
+            }
+        }
+        catch (Exception ex)
+        {
+            throw ex;
+        }
+    }
+}

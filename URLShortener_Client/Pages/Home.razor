@@ -1,7 +1,151 @@
 ﻿@page "/"
 
-<PageTitle>Home</PageTitle>
 
-<h1>Hello, world!</h1>
+<div class="text-center mb-5">
+    <h1 class="first-headline">Shorten Your Links,</h1>
+    <h1 class="second-headline">Amplify Your Reach</h1>
+    <div class="detail-headline">
+        Create powerful short links with detailed analytics, QR codes, and enterprise-grade reliability.
+    </div>
+</div>
+<div class="shorten-section">
+   @* <div class="d-flex justify-content-center">
+       <div class="shorten-url-logo">
+            <URLShortener_Client.Icons.UrlLogo2 Width="35" Height="35" />
+       </div>
+   </div>
+   <div class="text-center my-4">
+        <h2 class="fw-bold">Shorten Your Link</h2>
+        <span class="shorten-link-desc ">Transform long URLs into short, shareable links</span>
+   </div> *@
 
-Welcome to your new app.
+    <div class="shorten-input-container">
+        <input type="text" class="shorten-input me-3 @(!string.IsNullOrEmpty(errorMsg)?"error":"")" placeholder="https://example.com/your-long-url" @bind="@data.OriginalUrl" @bind:event="oninput" />
+        <button type="button" class="btn-none btn-shorten @(string.IsNullOrWhiteSpace(data.OriginalUrl)?"disabled":"")" disabled="@(string.IsNullOrWhiteSpace(data.OriginalUrl))" @onclick="CreateShortUrl">
+            Shorten URL
+        </button>
+        @if (!string.IsNullOrWhiteSpace(errorMsg))
+        {
+            <div class="error-text text-center blink mt-4"><URLShortener_Client.Icons.InfoIcon Width="25" Height="25" /> @errorMsg</div>
+        }
+    </div>   
+
+    <div class="features-container">
+        <div class="feature-name">
+            <div class="feature-highlight">
+                Fast
+            </div>
+            <div class="feature-desc">
+                Instant URL shortening
+            </div>
+        </div>
+        <div class="feature-name">
+            <div class="feature-highlight">
+                Free
+            </div>
+            <div class="feature-desc">
+                No credit card required
+            </div>
+        </div>
+        <div class="feature-name">
+            <div class="feature-highlight">
+                QR Code
+            </div>
+            <div class="feature-desc">
+                Generated automatically
+            </div>
+        </div>
+    </div>
+
+</div>
+<div class="why-main-title">Why choose UrLink?</div>
+<div class="why-choose-container">
+    
+    <div class="why-choose-card">
+        <div class="why-choose-icon lightning-color">
+            <URLShortener_Client.Icons.LightningIcon />
+        </div>
+        <div class="why-choose-title">
+            Lightning Fast
+        </div>
+        <div class="why-choose-desc">
+            Create shortened URLs instantly with our platform. No delays, no hassle.
+        </div>
+    </div>
+    <div class="why-choose-card">
+        <div class="why-choose-icon graph-color">
+            <URLShortener_Client.Icons.GraphIcon />
+        </div>
+        <div class="why-choose-title">
+            Detailed Analytics
+        </div>
+        <div class="why-choose-desc">
+            Track every click with comprehensive analytics. Know your audience better.
+        </div>
+    </div>
+    <div class="why-choose-card">
+        <div class="why-choose-icon  qr-color">
+            <URLShortener_Client.Icons.QRIcon />
+        </div>
+        <div class="why-choose-title">
+            QR Codes
+        </div>
+        <div class="why-choose-desc">
+            Automatically generate QR codes for all your links. Perfect for print and digital.
+        </div>
+    </div>
+    <div class="why-choose-card">
+        <div class="why-choose-icon secure-color">
+            <URLShortener_Client.Icons.ShieldIcon />
+        </div>
+        <div class="why-choose-title">
+            Secure & Reliable
+        </div>
+        <div class="why-choose-desc">
+            Enterprise-grade security with 99.9% uptime guarantee. Your links are safe with us.
+        </div>
+    </div>
+</div>
+
+<div class="ready-container">
+    <div class="ready-main-title">Ready to Get Started?</div>
+    <div class="ready-main-desc">
+        Sign up now to unlock analytics, custom links, and advanced features.
+    </div>
+    <div class="create-acc-container">
+        <button type="button" class="btn-none create-acc-btn">Create Free Account</button>
+    </div>
+</div>
+<div class="footer-section">
+    © 2025 Kaung Htet Hein.
+</div>
+
+@code{
+    private Dto_CreateShortUrl data = new();
+    private string? errorMsg;
+
+
+    private async Task CreateShortUrl()
+    {
+        Validate();
+        if (!string.IsNullOrWhiteSpace(errorMsg)) return;
+        await JS.InvokeVoidAsync("console.log", "param => ", data);
+        var result = await ApiClient.PostAsync<DataResult<Dto_ShortUrl>>("api/shorturl/create", data);
+        await JS.InvokeVoidAsync("console.log", "api result => ", result);
+    }
+    private void Validate()
+    {
+        if (!Uri.TryCreate(data.OriginalUrl, UriKind.Absolute, out _))
+        {
+            errorMsg = "Invalid URL format";
+            return; 
+        }
+        if(data.OriginalUrl.Length > 2048)
+        {
+            errorMsg = "URL is too long";
+            return;
+        }
+
+    }
+    
+}

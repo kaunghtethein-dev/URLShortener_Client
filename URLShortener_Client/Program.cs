@@ -1,5 +1,8 @@
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using URLShortener_Client.Configuration;
+using URLShortener_Client.Extensions;
+using URLShortener_Client.Services;
 
 namespace URLShortener_Client
 {
@@ -11,9 +14,36 @@ namespace URLShortener_Client
             builder.RootComponents.Add<App>("#app");
             builder.RootComponents.Add<HeadOutlet>("head::after");
 
-            builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+            var baseAddress = builder.HostEnvironment.BaseAddress;
 
-            await builder.Build().RunAsync();
+            string configFile = builder.HostEnvironment.IsDevelopment() ? "appsettings.Development.json" : "appsettings.json";
+            var response = await ConfigLoader.LoadConfigFileAsync($"{baseAddress}{configFile}");
+            response.EnsureSuccessStatusCode();
+            var stream = await response.Content.ReadAsStreamAsync();
+            // Build configuration from stream
+            var config = new ConfigurationBuilder()
+                .AddJsonStream(stream)
+                .Build();
+
+            // Bind to AppSettings class
+            var appSettings = config.Get<AppSettings>()?? new AppSettings();
+            builder.Services.AddSingleton(appSettings);
+
+            // Configure HttpClient with API base URL from settings
+            builder.Services.AddScoped(sp => new HttpClient
+            {
+                BaseAddress = new Uri(appSettings.API_BaseURL)
+            });
+            builder.Services.AddScoped<ApiClient>();
+            builder.Services.AddScoped<LocalStorageService>();
+            builder.Services.AddScoped<VariablesService>();
+            var host = builder.Build();
+
+            // --- Load AuthInfo from LocalStorage at startup ---
+            var variablesService = host.Services.GetRequiredService<VariablesService>();
+            await variablesService.LoadAuthInfoAsync();
+
+            await host.RunAsync();
         }
     }
 }

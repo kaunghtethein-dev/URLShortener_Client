@@ -1,0 +1,53 @@
+﻿<div @ref="modalElement" class="modal @MainModalCss" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered @ModalDialogCss" role="document">
+        <div class="modal-content @ModalContentCss">
+            @if (ShowHeader)
+            {
+                <div class="modal-header">
+                    <h5 class="modal-title">@ModalTitle</h5>
+                    <button type="button" class="btn-none btn-modal-close" aria-label="Close" @onclick='() => OnModalClose.InvokeAsync()'>
+                        <span>&times;</span>
+                    </button>
+                </div>
+            }
+           
+            <div class="modal-body @ModalBodyCss">
+                @ModalBody
+            </div>
+           @*  <div class="modal-footer">
+                <button type="button" class="btn btn-primary">Save changes</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div> *@
+        </div>
+    </div>
+</div>
+
+
+@code {
+    [Parameter]
+    public string? ModalTitle { get; set; }
+    [Parameter]
+    public RenderFragment? ModalBody { get; set; }
+    [Parameter]
+    public EventCallback OnModalClose { get; set; }
+    [Parameter]
+    public string MainModalCss { get; set; } = string.Empty;
+    [Parameter]
+    public string ModalDialogCss { get; set; } = string.Empty;
+    [Parameter]
+    public string ModalContentCss { get; set; } = string.Empty;
+    [Parameter]
+    public string ModalBodyCss { get; set; } = string.Empty;
+    [Parameter]
+    public bool ShowHeader  {get;set;}
+
+    private ElementReference modalElement;
+    public  async Task Close()
+    {
+        await JS.InvokeVoidAsync("AppJS.hideElement", modalElement);
+    }
+    public async Task Open()
+    {
+        await JS.InvokeVoidAsync("AppJS.showElement", modalElement);
+    }
+}
