@@ -467,6 +467,7 @@ input.error {
 }
 .user-menu {
     position: absolute;
+    background: white;
     padding: 10px;
     width: 150px;
     border: 1px solid lightgray;
@@ -539,3 +540,31 @@ button.btn-none.btn-signup-link {
 }
 
 /*----------------------*/
+
+/*Message Modal*/
+.modal-content{
+    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+}
+.message-close-container {
+    text-align: right;
+}
+
+.message-type-icon {
+    background: #5656ef;
+    color: white;
+    border-radius: 50%;
+}
+
+.message-modal-container {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.message-title {
+    font-weight: bold;
+    font-size: 20px;
+    margin-bottom: 10px;
+}
+/*------------------*/

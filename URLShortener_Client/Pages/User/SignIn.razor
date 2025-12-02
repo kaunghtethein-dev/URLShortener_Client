@@ -24,16 +24,19 @@
         Don't have an account? <button class="btn-none btn-signup-link">Sign Up</button>
     </div>
 </div>
+<MessageModal @ref="messageModal"></MessageModal>
 @code {
     [Parameter]
     public EventCallback OnModalClose { get; set; }
 
     private Dto_LoginUser loginParam = new();
+    private MessageModal messageModal = new();
 
     private async Task LogIn()
     {
         try
         {
+            Vs.IsLoading = true;
             await JS.InvokeVoidAsync("console.log", "login request => ", loginParam);
             var result = await ApiClient.PostAsync<DataResult<Dto_AuthResponse>>("api/user/login", loginParam);
             await JS.InvokeVoidAsync("console.log", "login response => ", result);
@@ -53,17 +56,20 @@
                 // Save globally
                 await Vs.SaveAuthInfoAsync(authInfo);
                 await JS.InvokeVoidAsync("console.log", "AuthInfo => ", Vs.AuthInfo);
+                Vs.IsLoading = false;
                 await OnModalClose.InvokeAsync();
-                
+
             }
             else
             {
-                
+                Vs.IsLoading = false;
+                await messageModal.ShowMessage(MessageType.Info, string.Empty, result?.Message??"Something went wrong.");
             }
         }
         catch (Exception ex)
         {
-            throw ex;
+            Vs.IsLoading = false;
+            await messageModal.ShowMessage(MessageType.Error, "Critical Message", ex.Message);
         }
     }
 }

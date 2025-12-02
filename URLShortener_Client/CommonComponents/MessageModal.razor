@@ -1,0 +1,58 @@
+﻿<Modal @ref="modal" ModalBodyCss="p-30px">
+    <ModalBody>
+        @if (isOpenModal)
+        {
+            <div class="message-close-container">
+                <button type="button" class="btn-none" @onclick="CloseModal">
+                    <URLShortener_Client.Icons.CrossIcon Width="25" Height="25"></URLShortener_Client.Icons.CrossIcon>
+                </button>
+            </div>
+           <div class="message-modal-container">
+               
+               <div class="message-type-icon">
+                    @if(_messageType == MessageType.Error)
+                    {
+                        <URLShortener_Client.Icons.CrossIcon Width="40" Height="40"></URLShortener_Client.Icons.CrossIcon>
+                    }
+                    else if(_messageType == MessageType.Warning)
+                    {
+                        <URLShortener_Client.Icons.WarningIcon Width="40" Height="40"></URLShortener_Client.Icons.WarningIcon>
+                    }
+                    else
+                    {
+                        <URLShortener_Client.Icons.InfoNoCircleIcon Width="40" Height="40"></URLShortener_Client.Icons.InfoNoCircleIcon>
+                    }
+                   
+               </div>
+               <div class="message-rightside">
+                    @if (!string.IsNullOrWhiteSpace(_messageTitle))
+                    {
+                        <div class="message-title">@_messageTitle</div>
+                    }
+                    <div class="message-body">@_messageBody</div>
+               </div>
+           </div>
+        }
+
+    </ModalBody>
+</Modal>
+
+@code {
+    private Modal modal = new();
+    private bool isOpenModal;
+    private string _messageType = "", _messageTitle = "", _messageBody = "";
+    public async Task ShowMessage(string messageType, string messageTitle, string messageBody)
+    {
+        _messageType = messageType;
+        _messageTitle = messageTitle;
+        _messageBody = messageBody;
+        isOpenModal = true;
+        StateHasChanged();
+        await modal.Open();
+    }
+    public async Task CloseModal()
+    {
+        isOpenModal = false;
+        await modal.Close();
+    }
+}

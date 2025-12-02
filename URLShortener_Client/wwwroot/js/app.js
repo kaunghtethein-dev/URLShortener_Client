@@ -15,5 +15,17 @@
             void element.offsetWidth;
             element.classList.add('show');
         }
+    },
+    toggleLoading: function (loadingStart) {
+        console.log("loadingStart => ", loadingStart);
+        var loader = document.getElementById("loading");
+        if (loader) {
+            if (loadingStart) {
+                loader.style.display = "block";
+            }
+            else {
+                loader.style.display = "none";
+            }
+        }
     }
 };
