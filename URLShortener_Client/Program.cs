@@ -20,7 +20,7 @@ namespace URLShortener_Client
             var response = await ConfigLoader.LoadConfigFileAsync($"{baseAddress}{configFile}");
             response.EnsureSuccessStatusCode();
             var stream = await response.Content.ReadAsStreamAsync();
-            // Build configuration from stream
+         
             var config = new ConfigurationBuilder()
                 .AddJsonStream(stream)
                 .Build();
@@ -34,9 +34,11 @@ namespace URLShortener_Client
             {
                 BaseAddress = new Uri(appSettings.API_BaseURL)
             });
+            builder.Services.AddSingleton<NotifierService>();
             builder.Services.AddScoped<ApiClient>();
             builder.Services.AddScoped<LocalStorageService>();
             builder.Services.AddScoped<VariablesService>();
+            builder.Services.AddScoped<CommonFunctionsService>();
             var host = builder.Build();
 
             // --- Load AuthInfo from LocalStorage at startup ---

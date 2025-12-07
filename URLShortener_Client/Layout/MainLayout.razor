@@ -1,4 +1,5 @@
 ﻿@inherits LayoutComponentBase
+@implements IDisposable
 <div class="page">
    
     <main>
@@ -16,7 +17,7 @@
                         <span class="font-color"><URLShortener_Client.Icons.SignInIcon Width="25" Height="25" /></span>
                         <span class="font-color">Sign In</span>
                     </button>
-                    <button class="btn-none btn-signup">
+                    <button class="btn-none btn-signup" @onclick="OpenSignupModal">
                         <span class="text-light"><URLShortener_Client.Icons.SignUpIcon Width="25" Height="25" /></span>
                         <span class="text-light">Sign Up</span>
                     </button>
@@ -62,7 +63,7 @@
         </article>
     </main>
 </div>
-<Modal @ref="modal" ModalBodyCss="p-30px">
+<Modal @ref="loginModal" MainModalCss="overflow-hidden" ModalBodyCss="p-30px">
     <ModalBody>
         @if (isOpenLoginModal)
         {
@@ -71,23 +72,63 @@
 
     </ModalBody>
 </Modal>
+<Modal @ref="signUpModal" MainModalCss="overflow-hidden" ModalBodyCss="p-30px">
+    <ModalBody>
+        @if (isOpenSignupModal)
+        {
+            <URLShortener_Client.Pages.User.SignUp OnModalClose="CloseSignupModal"></URLShortener_Client.Pages.User.SignUp>
+        }
+
+    </ModalBody>
+</Modal>
 
 @code{
 
-    private Modal modal = new();
-    private bool isOpenLoginModal,isOpenUserMenu;
+    private Modal loginModal = new();
+    private Modal signUpModal = new();
+    private bool isOpenLoginModal,isOpenSignupModal,isOpenUserMenu;
+
+    protected override void OnInitialized()
+    {
+        Notifier.OnEventAsync += OnReceiveEmit;
+    }
+    private async Task OnReceiveEmit(string key, object? data ,string? actionName)
+    {
+        if(key == "OpenSignIn")
+        {
+            await OpenLoginModal();
+        }
+        else if(key == "OpenSignUp")
+        {
+            await OpenSignupModal();
+        }
+    }
     private async Task CloseLoginModal()
     {
         isOpenLoginModal = false;
-        await modal.Close();
+        await loginModal.Close();
     }
     private async Task OpenLoginModal()
     {
         isOpenLoginModal = true;
-        await modal.Open();
+        await loginModal.Open();
+    }
+    private async Task CloseSignupModal()
+    {
+        isOpenSignupModal = false;
+        await signUpModal.Close();
+    }
+    private async Task OpenSignupModal()
+    {
+        isOpenSignupModal = true;
+        await signUpModal.Open();
     }
     private void ToggleUserMenu()
     {
         isOpenUserMenu = !isOpenUserMenu;
+    }
+    public void Dispose()
+    {
+        Notifier.OnEventAsync -= OnReceiveEmit;
     }
 }

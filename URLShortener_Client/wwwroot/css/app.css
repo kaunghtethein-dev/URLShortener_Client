@@ -434,7 +434,7 @@ code {
 
 }
 input.error {
-    border: 1px solid red;
+    border: 1px solid red !important;
 }
 .blink {
     animation: blink 2s infinite;

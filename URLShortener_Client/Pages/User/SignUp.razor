@@ -1,0 +1,205 @@
+﻿<div class="d-flex justify-content-end">
+    <button type="button" class="btn-none font-color" @onclick='() => { OnModalClose.InvokeAsync(); }'><URLShortener_Client.Icons.CrossIcon Width="20" Height="20" /></button>
+</div>
+<h1 class="mb-1 fw-bold">Create Account</h1>
+<div class="font-color fs-20px">Start tracking your links today</div>
+
+<div class="login-input-form">
+    <div class="input-container">
+        <div class="form-input-title">Email Address</div>
+        <div>
+            <input @bind="signupParam.Email" class="text-input @(!string.IsNullOrWhiteSpace(errorMsg["email"]) ? "error" : "")" type="text" placeholder="you@example.com" />
+        </div>
+        @if (!string.IsNullOrWhiteSpace(errorMsg["email"]))
+        {
+            <div class="error-text mt-1">@errorMsg["email"]</div>
+        }
+    </div>
+    <div class="input-container">
+        <div class="form-input-title">User Name</div>
+        <div>
+            <input @bind="signupParam.UserName" class="text-input @(!string.IsNullOrWhiteSpace(errorMsg["username"]) ? "error" : "")" type="text" placeholder="Enter your user name" />
+        </div>
+        @if (!string.IsNullOrWhiteSpace(errorMsg["username"]))
+        {
+            <div class="error-text mt-1">@errorMsg["username"]</div>
+        }
+    </div>
+    <div class="input-container">
+        <div class="form-input-title">Password</div>
+        <div>
+            <input @bind="signupParam.Password" class="text-input @(!string.IsNullOrWhiteSpace(errorMsg["password"]) ? "error" : "")" type="password" placeholder="Enter your password" />
+        </div>
+        @if (!string.IsNullOrWhiteSpace(errorMsg["password"]))
+        {
+            <div class="error-text mt-1">@errorMsg["password"]</div>
+        }
+    </div>
+    <div class="signin-btn-container">
+        <button type="button" class="btn-primary-signin" @onclick="HandleSignup">Sign Up</button>
+    </div>
+    <div class="sign-in-footer">
+        Already have an account? <button class="btn-none btn-signup-link" @onclick="NotifyForSignIn">Sign In</button>
+    </div>
+</div>
+<MessageModal @ref="messageModal"></MessageModal>
+@code {
+    [Parameter]
+    public EventCallback OnModalClose { get; set; }
+
+    private Dto_CreateUser signupParam = new();
+    private MessageModal messageModal = new();
+    private Dictionary<string, string> errorMsg = new Dictionary<string, string>()
+    {
+        {"username",string.Empty },
+        {"email",string.Empty },
+        {"password", string.Empty }
+    };
+
+    private async Task HandleSignup()
+    {
+        try
+        {
+            ValidateUserName();
+            ValidateEmail();
+            ValidatePassword();
+            if (!string.IsNullOrWhiteSpace(errorMsg["username"]) || !string.IsNullOrWhiteSpace(errorMsg["email"]) || !string.IsNullOrWhiteSpace(errorMsg["password"])) return;
+
+            Vs.IsLoading = true;
+            var userExists = await CheckUserAlreadyExists();
+            if (userExists)
+            {
+                Vs.IsLoading = false;
+                await messageModal.ShowMessage(MessageType.Info, string.Empty, "User with the same mail already exists.");
+                return;
+            }
+            var result = await ApiClient.PostAsync<DataResult<Dto_User>>("api/user/createuser", signupParam);
+            if (result != null && result.Success && result.Data != null)
+            {
+                await Login();
+                Vs.IsLoading = false;
+                await OnModalClose.InvokeAsync();
+
+            }
+            else
+            {
+                Vs.IsLoading = false;
+                await messageModal.ShowMessage(MessageType.Info, string.Empty, result?.Message ?? "Something went wrong.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Vs.IsLoading = false;
+            await messageModal.ShowMessage(MessageType.Error, "Critical Message", ex.Message);
+        }
+    }
+    private async Task<bool> CheckUserAlreadyExists()
+    {
+        try
+        {
+            var result = await ApiClient.GetAsync<DataResult<bool>>($"api/user/checkuserexist/{signupParam.Email}");
+            if (result != null && result.Success)
+            {
+                return result.Data;
+
+            }
+            return false;
+        }
+        catch (Exception ex)
+        {
+            throw ex;
+        }
+    }
+    private async Task Login()
+    {
+        //To immediately login after succesful signup
+        try
+        {
+            var loginParam = new Dto_LoginUser
+            {
+                Email = signupParam.Email,
+                Password = signupParam.Password
+            };
+            var result = await ApiClient.PostAsync<DataResult<Dto_AuthResponse>>("api/user/login", loginParam);
+            if (result != null && result.Success && result.Data != null)
+            {
+                // Convert Dto_AuthResponse to AuthInfo
+                var authInfo = new AuthInfo
+                {
+                    AccessToken = result.Data.AccessToken,
+                    RefreshToken = result.Data.RefreshToken,
+                    AccessTokenExpiresAt = result.Data.AccessTokenExpiresAt,
+                    UserName = result.Data.UserName,
+                    Email = result.Data.Email,
+                    UserId = result.Data.UserId
+                };
+
+                // Save globally
+                await Vs.SaveAuthInfoAsync(authInfo);
+            }
+            else
+            {
+                await messageModal.ShowMessage(MessageType.Info, string.Empty, result?.Message ?? "Something went wrong.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Vs.IsLoading = false;
+            await messageModal.ShowMessage(MessageType.Error, "Critical Message", ex.Message);
+        }
+    }
+    private void ValidateUserName()
+    {
+        if (string.IsNullOrWhiteSpace(signupParam.UserName))
+        {
+            errorMsg["username"] = "User Name cannot be empty.";
+        }
+        else if(signupParam.UserName.Length > 100)
+        {
+            errorMsg["username"] = "User Name cannot exceed 100 characters";
+        }
+        else
+        {
+            errorMsg["username"] = string.Empty;
+        }
+    }
+    private void ValidateEmail()
+    {
+        if (string.IsNullOrWhiteSpace(signupParam.Email))
+        {
+            errorMsg["email"] = "Email cannot be empty.";
+        }
+        else if (signupParam.Email.Length > 150)
+        {
+            errorMsg["email"] = "Email cannot exceed 150 characters.";
+        }
+        else if (!ComFn.IsEmailValidFormat(signupParam.Email))
+        {
+            errorMsg["email"] = "Email format is incorrect.";
+        }
+        else
+        {
+            errorMsg["email"] = string.Empty;
+        }
+    }
+    private void ValidatePassword()
+    {
+        if (string.IsNullOrWhiteSpace(signupParam.Password))
+        {
+            errorMsg["password"] = "Password cannot be empty.";
+        }
+        else if (signupParam.Password.Length > 300)
+        {
+            errorMsg["password"] = "Password cannot exceed 300 characters.";
+        }
+        else
+        {
+            errorMsg["password"] = string.Empty;
+        }
+    }
+    private void NotifyForSignIn()
+    {
+        Notifier.Emit("OpenSignIn");
+        OnModalClose.InvokeAsync();
+    }
+}

@@ -1,4 +1,5 @@
-﻿<div class="d-flex justify-content-end">
+﻿@using System.Text.RegularExpressions
+<div class="d-flex justify-content-end">
     <button type="button" class="btn-none font-color" @onclick='() => { OnModalClose.InvokeAsync(); }'><URLShortener_Client.Icons.CrossIcon Width="20" Height="20" /></button>
 </div>
 <h1 class="mb-1 fw-bold">Welcome Back</h1>
@@ -8,20 +9,28 @@
     <div class="input-container">
         <div class="form-input-title">Email Address</div>
         <div>
-            <input @bind="loginParam.Email" class="text-input" type="text" placeholder="you@example.com"/>
+            <input @bind="loginParam.Email" class="text-input @(!string.IsNullOrWhiteSpace(errorMsg["email"])?"error":"")" type="text" placeholder="you@example.com"/>
         </div>
+        @if (!string.IsNullOrWhiteSpace(errorMsg["email"]))
+        {
+            <div class="error-text mt-1">@errorMsg["email"]</div>
+        }
     </div>
     <div class="input-container">
         <div class="form-input-title">Password</div>
         <div>
-            <input @bind="loginParam.Password" class="text-input" type="password" placeholder="Enter your password" />
+            <input @bind="loginParam.Password" class="text-input @(!string.IsNullOrWhiteSpace(errorMsg["password"]) ? "error" : "")" type="password" placeholder="Enter your password" />
+            @if (!string.IsNullOrWhiteSpace(errorMsg["password"]))
+            {
+                <div class="error-text mt-1">@errorMsg["password"]</div>
+            }
         </div>
     </div>
     <div class="signin-btn-container">
         <button type="button" class="btn-primary-signin" @onclick="LogIn">Sign In</button>
     </div>
     <div class="sign-in-footer">
-        Don't have an account? <button class="btn-none btn-signup-link">Sign Up</button>
+        Don't have an account? <button class="btn-none btn-signup-link" @onclick="NotifyForSignUp">Sign Up</button>
     </div>
 </div>
 <MessageModal @ref="messageModal"></MessageModal>
@@ -31,15 +40,22 @@
 
     private Dto_LoginUser loginParam = new();
     private MessageModal messageModal = new();
+    private Dictionary<string, string> errorMsg = new Dictionary<string, string>()
+    {
+        {"email",string.Empty },
+        {"password", string.Empty }
+    };
 
     private async Task LogIn()
     {
         try
         {
+            ValidateEmail();
+            ValidatePassword();
+            if (!string.IsNullOrWhiteSpace(errorMsg["email"]) || !string.IsNullOrWhiteSpace(errorMsg["password"])) return;
+
             Vs.IsLoading = true;
-            await JS.InvokeVoidAsync("console.log", "login request => ", loginParam);
             var result = await ApiClient.PostAsync<DataResult<Dto_AuthResponse>>("api/user/login", loginParam);
-            await JS.InvokeVoidAsync("console.log", "login response => ", result);
             if (result != null && result.Success && result.Data != null)
             {
                 // Convert Dto_AuthResponse to AuthInfo
@@ -71,5 +87,44 @@
             Vs.IsLoading = false;
             await messageModal.ShowMessage(MessageType.Error, "Critical Message", ex.Message);
         }
+    }
+    private void ValidateEmail()
+    {
+        if (string.IsNullOrWhiteSpace(loginParam.Email))
+        {
+            errorMsg["email"] = "Email cannot be empty.";
+        }
+        else if(loginParam.Email.Length > 150)
+        {
+            errorMsg["email"] = "Email cannot exceed 150 characters.";
+        }
+        else if (!ComFn.IsEmailValidFormat(loginParam.Email))
+        {
+            errorMsg["email"] = "Email format is incorrect.";
+        }
+        else
+        {
+            errorMsg["email"] = string.Empty;
+        }
+    }
+    private void ValidatePassword()
+    {
+        if (string.IsNullOrWhiteSpace(loginParam.Password))
+        {
+            errorMsg["password"] = "Password cannot be empty.";
+        }
+        else if(loginParam.Password.Length > 300)
+        {
+            errorMsg["password"] = "Password cannot exceed 300 characters.";
+        }
+        else
+        {
+            errorMsg["password"] = string.Empty;
+        }
+    }
+    private void NotifyForSignUp()
+    {
+        Notifier.Emit("OpenSignUp");
+        OnModalClose.InvokeAsync();
     }
 }
