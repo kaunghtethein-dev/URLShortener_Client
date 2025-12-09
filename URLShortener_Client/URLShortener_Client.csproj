@@ -17,10 +17,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Pages\ShortURL\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Reference Include="URLShortener_Shared">
       <HintPath>References\URLShortener_Shared.dll</HintPath>
     </Reference>

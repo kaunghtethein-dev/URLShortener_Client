@@ -1,0 +1,65 @@
+﻿@if (isFinished)
+{
+    <div class="text-center">
+        <div class="qr-title"><URLShortener_Client.Icons.QRIcon Width="20" Height="20" />  QR Code</div>
+        <img src="data:image/png;base64,@qrImageBase64" alt="QR Code" class="qrImg" />
+        <div class="d-flex justify-content-center mt-2">
+            <button @onclick="DownloadQrCode" class="btn-none btn-download-qr">
+                <URLShortener_Client.Icons.DownloadIcon Width="25" Height="25" /> Download QR
+            </button>
+        </div>
+    </div>
+}
+
+
+<MessageModal @ref="messageModal"></MessageModal>
+@code {
+    [Parameter]
+    public string ShortCode { get; set; } = string.Empty;
+
+    private string? qrImageBase64;
+    private MessageModal messageModal = new();
+    private bool isFinished;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                var resultBytes = await ApiClient.GetBytesAsync($"api/shorturl/qr/{ShortCode}");
+
+                if (resultBytes != null)
+                {
+                    qrImageBase64 = Convert.ToBase64String(resultBytes);
+                }
+                else
+                {
+                    await messageModal.ShowMessage(MessageType.Info, string.Empty, "Sorry! Qr code cannot be generated.");
+                }
+                isFinished = true;
+                StateHasChanged();
+            }
+            catch (Exception ex)
+            {
+                await messageModal.ShowMessage(MessageType.Error, "Critical Message", ex.Message);
+            }
+        }
+    }
+
+    private async Task DownloadQrCode()
+    {
+        if (qrImageBase64 == null) return;
+        var byteArray = Convert.FromBase64String(qrImageBase64);
+
+        var fileName = $"qr_{ShortCode}.png";
+        var mime = "image/png";
+
+        await JS.InvokeVoidAsync(
+            "AppJS.downloadFile",
+            fileName,
+            mime,
+            Convert.ToBase64String(byteArray)
+        );
+    }
+}
+

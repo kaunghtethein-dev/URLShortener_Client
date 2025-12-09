@@ -173,10 +173,10 @@ code {
     outline: none;
 }
 .blue-color {
-    color: #235ce5;
+    color: #235ce5 !important;
 }
 .font-color {
-    color: #4b5563;
+    color: #4b5563 !important;
 }
 .top-menu {
     background: white;
@@ -486,10 +486,79 @@ input.error {
     color: #4b5563;
     font-weight: 600;
 }
+.shorten-success-icon {
+    background: #bcfcbc;
+    color: green;
+    width: 70px;
+    height: 70px;
+    margin: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
 
+.completed-container {
+    margin-top: 20px;
+}
 
+.success-container {
+    margin: 10px 0 30px 0;
+}
+
+.success-title {
+    font-weight: bold;
+    text-align: center;
+    font-size: 28px;
+}
+
+.success-text {
+    text-align: center;
+    color: #4b5563;
+    font-size: 18px;
+}
+
+.success-url-container {
+    padding: 15px;
+}
+
+.success-url-title {
+    font-weight: bold;
+}
+
+.success-url {
+    margin: 10px;
+}
+
+.btn-copy-url {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    background: #235ce5;
+    color: white;
+    border-radius: 10px;
+    padding: 10px;
+}
+.qrImg{
+    width: 35%;
+    height: 35%;
+}
+.btn-download-qr {
+    color: #235ce5;
+    padding: 10px;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+}
+.qr-title {
+    color: #4b5563;
+    font-weight: 600;
+    font-size: 14px;
+}
 /*-------------------*/
-
 /*Sign in form*/
 .form-input-title {
     font-weight: 500;

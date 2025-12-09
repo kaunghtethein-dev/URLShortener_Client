@@ -27,5 +27,20 @@
                 loader.style.display = "none";
             }
         }
+    },
+    downloadFile: function (fileName, mimeType, base64Data) {
+        const link = document.createElement("a");
+        link.download = fileName;
+        link.href = `data:${mimeType};base64,${base64Data}`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    },
+    copyToClipboard:function(text) {
+        navigator.clipboard.writeText(text)
+            .catch(err => {
+                alert("Failed to copy: ", err);
+            });
     }
+
 };

@@ -31,6 +31,16 @@ namespace URLShortener_Client.Services
             response.EnsureSuccessStatusCode();
             return await response.Content.ReadFromJsonAsync<T>();
         }
+        //Seperate method for byteArray response
+        public async Task<byte[]?> GetBytesAsync(string uri)
+        {
+            await AttachTokenAsync();
+            var response = await _httpClient.GetAsync(uri);
+
+            if (!response.IsSuccessStatusCode) return null;
+            return await response.Content.ReadAsByteArrayAsync();
+        }
+
         // Attach JWT token from localStorage if available
         private async Task AttachTokenAsync()
         {

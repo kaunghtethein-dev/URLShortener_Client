@@ -9,27 +9,49 @@
     </div>
 </div>
 <div class="shorten-section">
-   @* <div class="d-flex justify-content-center">
-       <div class="shorten-url-logo">
-            <URLShortener_Client.Icons.UrlLogo2 Width="35" Height="35" />
-       </div>
-   </div>
-   <div class="text-center my-4">
-        <h2 class="fw-bold">Shorten Your Link</h2>
-        <span class="shorten-link-desc ">Transform long URLs into short, shareable links</span>
-   </div> *@
-
-    <div class="shorten-input-container">
-        <input type="text" class="shorten-input me-3 @(!string.IsNullOrEmpty(errorMsg)?"error":"")" placeholder="https://example.com/your-long-url" @bind="@data.OriginalUrl" @bind:event="oninput" />
-        <button type="button" class="btn-none btn-shorten @(string.IsNullOrWhiteSpace(data.OriginalUrl)?"disabled":"")" disabled="@(string.IsNullOrWhiteSpace(data.OriginalUrl))" @onclick="CreateShortUrl">
-            Shorten URL
-        </button>
-        @if (!string.IsNullOrWhiteSpace(errorMsg))
+    @if(viewMode == ViewMode.MainView)
+    {
+        <div class="shorten-input-container">
+            <input type="text" class="shorten-input me-3 @(!string.IsNullOrEmpty(errorMsg) ? "error" : "")" placeholder="https://example.com/your-long-url" @bind="@shortUrlParam.OriginalUrl" @bind:event="oninput" />
+            <button type="button" class="btn-none btn-shorten @(string.IsNullOrWhiteSpace(shortUrlParam.OriginalUrl) ? "disabled" : "")" disabled="@(string.IsNullOrWhiteSpace(shortUrlParam.OriginalUrl))" @onclick="CreateShortUrl">
+                Shorten URL
+            </button>
+            @if (!string.IsNullOrWhiteSpace(errorMsg))
+            {
+                <div class="error-text text-center blink mt-4"><URLShortener_Client.Icons.InfoIcon Width="25" Height="25" /> @errorMsg</div>
+            }
+        </div>
+    }
+    else
+    {
+        @if (resultUrl != null)
         {
-            <div class="error-text text-center blink mt-4"><URLShortener_Client.Icons.InfoIcon Width="25" Height="25" /> @errorMsg</div>
-        }
-    </div>   
+            <div class="completed-container">
+                <div class="shorten-success-icon"><URLShortener_Client.Icons.CheckIcon Width="40" Height="40" /></div>
+                <div class="success-container">
+                    <div class="success-title">Success!</div>
+                    <div class="success-text">Your shortened URL is ready to use.</div>
+                </div>
+                <div class="success-url-container">
+                    <div class="success-url-title">Original URL</div>
+                    <div class="success-url">@resultUrl.OriginalUrl</div>
+                </div>
+                <div class="success-url-container">
+                    <div class="success-url-title">Shortened URL</div>
+                    <div class="d-flex justify-content-between">
+                        <div class="success-url blue-color">@(appSettings.API_BaseURL + resultUrl.ShortCode)</div>
+                        <button type="button" class="btn-none btn-copy-url" @onclick='() => { JS.InvokeVoidAsync("AppJS.copyToClipboard", appSettings.API_BaseURL + resultUrl.ShortCode); }'><URLShortener_Client.Icons.CopyIcon Width="20" Height="20" />Copy</button>
+                    </div>
 
+                </div>
+                <URLShortener_Client.Pages.ShortURL.QRCodeView ShortCode="@resultUrl.ShortCode"></URLShortener_Client.Pages.ShortURL.QRCodeView>
+            </div>
+
+        }
+
+    }
+
+    
     <div class="features-container">
         <div class="feature-name">
             <div class="feature-highlight">
@@ -119,30 +141,65 @@
 <div class="footer-section">
     © 2025 Kaung Htet Hein.
 </div>
+<MessageModal @ref="messageModal"></MessageModal>
 @code{
-    private Dto_CreateShortUrl data = new();
+    private Dto_CreateShortUrl shortUrlParam = new();
+    private Dto_ShortUrl? resultUrl;
     private string? errorMsg;
-
-   
+    private MessageModal messageModal = new();
+    private enum ViewMode
+    {
+        MainView,
+        SuccessView,
+    }
+    private ViewMode viewMode = ViewMode.MainView;
     private async Task CreateShortUrl()
     {
         Validate();
         if (!string.IsNullOrWhiteSpace(errorMsg)) return;
-        await JS.InvokeVoidAsync("console.log", "param => ", data);
-        var result = await ApiClient.PostAsync<DataResult<Dto_ShortUrl>>("api/shorturl/create", data);
-        await JS.InvokeVoidAsync("console.log", "api result => ", result);
+        try
+        {
+            Vs.IsLoading = true;
+            if(Vs.AuthInfo != null)
+            {
+                shortUrlParam.UserId = Vs.AuthInfo.UserId;
+            }
+            var result = await ApiClient.PostAsync<DataResult<Dto_ShortUrl>>("api/shorturl/create", shortUrlParam);
+            if (result != null && result.Success)
+            {
+                resultUrl = result.Data;
+                viewMode = ViewMode.SuccessView;
+                await JS.InvokeVoidAsync("console.log", "resultURL => ", resultUrl);
+                await JS.InvokeVoidAsync("console.log", "ViewMode => ", viewMode.ToString());
+                StateHasChanged();
+            }
+            else
+            {
+                Vs.IsLoading = false;
+                await messageModal.ShowMessage(MessageType.Info, string.Empty, result?.Message??"Something went wrong.");
+            }
+            Vs.IsLoading = false;
+        }
+        catch(Exception ex)
+        {
+            Vs.IsLoading = false;
+            await messageModal.ShowMessage(MessageType.Error, "Critical Message", ex.Message);
+        }
+
     }
     private void Validate()
     {
-        if (!Uri.TryCreate(data.OriginalUrl, UriKind.Absolute, out _))
+        if (!Uri.TryCreate(shortUrlParam.OriginalUrl, UriKind.Absolute, out _))
         {
             errorMsg = "Invalid URL format";
-            return; 
         }
-        if(data.OriginalUrl.Length > 2048)
+        else if (shortUrlParam.OriginalUrl.Length > 2048)
         {
             errorMsg = "URL is too long";
-            return;
+        }
+        else
+        {
+            errorMsg = string.Empty;
         }
 
     }
