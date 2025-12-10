@@ -10,5 +10,13 @@ namespace URLShortener_Client.Services
             return Regex.IsMatch(email, pattern, RegexOptions.IgnoreCase);
             
         }
+        public bool ContainsInvalidUrlCharacters(string? input)
+        {
+            if (string.IsNullOrWhiteSpace(input))
+            {
+                return false;
+            }
+            return Regex.IsMatch(input, @"[\s<>#%""{}|\\^~\[\]`]|[\x00-\x1F\x7F]|[^\x00-\x7F]");
+        }
     }
 }

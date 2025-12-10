@@ -254,7 +254,8 @@ code {
     height: 70px;
     border: 2px solid lightgray;
     border-radius: 10px;
-    width: 500px;
+    /*width: 500px;*/
+    width: 100%;
     padding: 10px;
     outline: none;
 }
@@ -282,10 +283,32 @@ code {
     font-weight: bold;
     width: 150px;
 }
-
+.btn-shorten-container{
+    text-align: center;
+    margin-top: 15px;
+}
 .shorten-input-container {
     text-align: center;
+    padding: 0 20% 0 20%;
 }
+.extra-feature-container {
+    padding: 0 20% 0 20%;
+    margin: 20px 0 30px 0;
+}
+@media(max-width: 1100px){
+    .shorten-input-container {
+        padding: 0 15% 0 15%;
+    }
+    .extra-feature-container {
+        padding: 0 15% 0 15%;
+    }
+}
+
+.extra-feat-title {
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
 .features-container {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -557,6 +580,12 @@ input.error {
     color: #4b5563;
     font-weight: 600;
     font-size: 14px;
+}
+.btn-shorten-another {
+    color: #4b5563;
+    font-size: 18px;
+    text-decoration: underline;
+    font-weight: bold;
 }
 /*-------------------*/
 /*Sign in form*/

@@ -71,7 +71,7 @@
 
                 // Save globally
                 await Vs.SaveAuthInfoAsync(authInfo);
-                await JS.InvokeVoidAsync("console.log", "AuthInfo => ", Vs.AuthInfo);
+                Notifier.Emit("RefreshAuthInfo");
                 Vs.IsLoading = false;
                 await OnModalClose.InvokeAsync();
 

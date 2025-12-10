@@ -1,5 +1,5 @@
 ﻿@page "/"
-
+@implements IDisposable
 
 <div class="text-center mb-5">
     <h1 class="first-headline">Shorten Your Links,</h1>
@@ -12,15 +12,56 @@
     @if(viewMode == ViewMode.MainView)
     {
         <div class="shorten-input-container">
-            <input type="text" class="shorten-input me-3 @(!string.IsNullOrEmpty(errorMsg) ? "error" : "")" placeholder="https://example.com/your-long-url" @bind="@shortUrlParam.OriginalUrl" @bind:event="oninput" />
-            <button type="button" class="btn-none btn-shorten @(string.IsNullOrWhiteSpace(shortUrlParam.OriginalUrl) ? "disabled" : "")" disabled="@(string.IsNullOrWhiteSpace(shortUrlParam.OriginalUrl))" @onclick="CreateShortUrl">
-                Shorten URL
-            </button>
-            @if (!string.IsNullOrWhiteSpace(errorMsg))
+            @if(Vs.AuthInfo != null)
+            {
+                <div class="extra-feat-title text-start">URL to Shorten</div>
+            }
+
+            <input type="text" class="shorten-input @(!string.IsNullOrEmpty(errorMsg["orgUrl"]) ? "error" : "")" placeholder="https://example.com/your-long-url" @bind="@shortUrlParam.OriginalUrl" @bind:event="oninput" />
+
+            @if (!string.IsNullOrWhiteSpace(errorMsg["orgUrl"]))
             {
                 <div class="error-text text-center blink mt-4"><URLShortener_Client.Icons.InfoIcon Width="25" Height="25" /> @errorMsg</div>
             }
+
         </div>
+        @if (Vs.AuthInfo != null) //If only user is registered
+        {
+            <div class="extra-feature-container row">
+                <div class="col-12 col-sm-6 p-0 pe-sm-1">
+                    <div class="extra-feature">
+                        <div class="extra-feat-title"><URLShortener_Client.Icons.TagIcon Width="25" Height="25" /> Alias (Optional)</div>
+                        <input type="text" class="shorten-input @(!string.IsNullOrEmpty(errorMsg["alias"]) ? "error" : "")" placeholder="Add alias here" @bind="@shortUrlParam.CustomAlias" @bind:event="oninput" />
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 p-0 ps-sm-1">
+                    <div class="extra-feature">
+                        <div class="extra-feat-title"><URLShortener_Client.Icons.ClockIcon Width="25" Height="25"  /> Expired In (Optional)</div>
+                        <select @bind="@expireDuration" class="shorten-input @(!string.IsNullOrEmpty(errorMsg["alias"]) ? "error" : "")">
+                            <option value="@ExpireDuration.Never">Never</option>
+                            <option value="@ExpireDuration.OneDay">1 Day</option>
+                            <option value="@ExpireDuration.SevenDays">7 Days</option>
+                            <option value="@ExpireDuration.SevenDays">1 Month</option>
+                        </select>
+                    </div>
+                </div>
+                @if (!string.IsNullOrWhiteSpace(errorMsg["orgUrl"]))
+                {
+                    <div class="error-text mt-1">@errorMsg["orgUrl"]</div>
+                }
+                @if (!string.IsNullOrWhiteSpace(errorMsg["alias"]))
+                {
+                    <div class="error-text mt-1">@errorMsg["alias"]</div>
+                }
+            </div>
+           
+        }
+        <div class="btn-shorten-container">
+            <button type="button" class="btn-none btn-shorten @(string.IsNullOrWhiteSpace(shortUrlParam.OriginalUrl) ? "disabled" : "")" disabled="@(string.IsNullOrWhiteSpace(shortUrlParam.OriginalUrl))" @onclick="CreateShortUrl">
+                Shorten URL
+            </button>
+        </div>
+
     }
     else
     {
@@ -45,6 +86,9 @@
 
                 </div>
                 <URLShortener_Client.Pages.ShortURL.QRCodeView ShortCode="@resultUrl.ShortCode"></URLShortener_Client.Pages.ShortURL.QRCodeView>
+                <div class="text-center mt-2">
+                    <button type="button" class="btn-none btn-shorten-another" @onclick="SwitchMainView">Shorten Another URL </button>
+                </div>
             </div>
 
         }
@@ -145,18 +189,45 @@
 @code{
     private Dto_CreateShortUrl shortUrlParam = new();
     private Dto_ShortUrl? resultUrl;
-    private string? errorMsg;
+    private Dictionary<string, string> errorMsg = new Dictionary<string, string>()
+    {
+        {"orgUrl",string.Empty },
+        {"alias",string.Empty }
+    };
     private MessageModal messageModal = new();
     private enum ViewMode
     {
         MainView,
         SuccessView,
     }
+    private enum ExpireDuration
+    {
+        Never = 0,
+        OneDay = 1,
+        SevenDays = 7,
+        OneMonth = 30
+    }
     private ViewMode viewMode = ViewMode.MainView;
+    private ExpireDuration expireDuration = ExpireDuration.Never;
+
+    protected override void OnInitialized()
+    {
+        Notifier.OnEvent += OnReceiveEmit;
+    }
+    private void OnReceiveEmit(string key, object? data, string? actionName)
+    {
+        if (key == "RefreshAuthInfo")
+        {
+            StateHasChanged();
+        }
+    }
     private async Task CreateShortUrl()
     {
-        Validate();
-        if (!string.IsNullOrWhiteSpace(errorMsg)) return;
+        ValidateOriginalUrl();
+        ValidateAlias();
+
+        if (!string.IsNullOrWhiteSpace(errorMsg["orgUrl"]) || !string.IsNullOrWhiteSpace(errorMsg["alias"])) return;
+
         try
         {
             Vs.IsLoading = true;
@@ -164,13 +235,14 @@
             {
                 shortUrlParam.UserId = Vs.AuthInfo.UserId;
             }
+            SetExpireTime();
+            await JS.InvokeVoidAsync("console.log", "shortURLParam => ", shortUrlParam);
             var result = await ApiClient.PostAsync<DataResult<Dto_ShortUrl>>("api/shorturl/create", shortUrlParam);
             if (result != null && result.Success)
             {
                 resultUrl = result.Data;
+                await JS.InvokeVoidAsync("console.log", "shortURL Response => ", resultUrl);
                 viewMode = ViewMode.SuccessView;
-                await JS.InvokeVoidAsync("console.log", "resultURL => ", resultUrl);
-                await JS.InvokeVoidAsync("console.log", "ViewMode => ", viewMode.ToString());
                 StateHasChanged();
             }
             else
@@ -179,6 +251,7 @@
                 await messageModal.ShowMessage(MessageType.Info, string.Empty, result?.Message??"Something went wrong.");
             }
             Vs.IsLoading = false;
+
         }
         catch(Exception ex)
         {
@@ -187,21 +260,72 @@
         }
 
     }
-    private void Validate()
+    private void ValidateOriginalUrl()
     {
         if (!Uri.TryCreate(shortUrlParam.OriginalUrl, UriKind.Absolute, out _))
         {
-            errorMsg = "Invalid URL format";
+            errorMsg["orgUrl"] = "Invalid URL format";
         }
         else if (shortUrlParam.OriginalUrl.Length > 2048)
         {
-            errorMsg = "URL is too long";
+            errorMsg["orgUrl"] = "URL is too long";
         }
         else
         {
-            errorMsg = string.Empty;
+            errorMsg["orgUrl"] = string.Empty;
         }
 
     }
-    
+    private void ValidateAlias()
+    {
+        if (shortUrlParam.CustomAlias != null)
+        {
+            if (ComFn.ContainsInvalidUrlCharacters(shortUrlParam.CustomAlias))
+            {
+                errorMsg["alias"] = "Alias contain invalid characters";
+            }
+            else if (shortUrlParam.CustomAlias.Length > 50)
+            {
+                errorMsg["alias"] = "Alias cannot exceed 50 characters";
+            }
+            else
+            {
+                errorMsg["alias"] = string.Empty;
+            }
+
+        }
+        else
+        {
+            errorMsg["alias"] = string.Empty;
+        }
+    }
+    private void SwitchMainView()
+    {
+        viewMode = ViewMode.MainView;
+        shortUrlParam = new();
+        resultUrl = null;
+        expireDuration = ExpireDuration.Never;
+        StateHasChanged();
+    }
+    private void SetExpireTime()
+    {
+        if (!Enum.IsDefined(typeof(ExpireDuration), expireDuration))
+        {
+            expireDuration = ExpireDuration.Never;
+        }
+
+        if(expireDuration != ExpireDuration.Never)
+        {
+            shortUrlParam.ExpiresAt = DateTime.UtcNow.AddDays((int)expireDuration);
+        }
+        else
+        {
+            shortUrlParam.ExpiresAt = null;
+        }
+    }
+    public void Dispose()
+    {
+        Notifier.OnEvent -= OnReceiveEmit;
+    }
+
 }

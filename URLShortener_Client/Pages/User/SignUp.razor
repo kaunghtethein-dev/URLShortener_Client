@@ -136,6 +136,7 @@
 
                 // Save globally
                 await Vs.SaveAuthInfoAsync(authInfo);
+                Notifier.Emit("RefreshAuthInfo");
             }
             else
             {
