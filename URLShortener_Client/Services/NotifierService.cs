@@ -7,11 +7,11 @@
 
         public void Emit(string eventName, object? data = null, string? action = null)
         {
-            if(OnEvent != null)
+            if (OnEvent != null)
             {
                 OnEvent?.Invoke(eventName, data, action);
             }
-            else if(OnEventAsync != null)
+            if(OnEventAsync != null)
             {
                 OnEventAsync?.Invoke(eventName, data, action);
             }

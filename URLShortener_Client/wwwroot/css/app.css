@@ -303,6 +303,15 @@ code {
         padding: 0 15% 0 15%;
     }
 }
+@media(max-width: 650px) {
+    .shorten-input-container {
+        padding: 0;
+    }
+
+    .extra-feature-container {
+        padding: 0;
+    }
+}
 
 .extra-feat-title {
     font-weight: bold;

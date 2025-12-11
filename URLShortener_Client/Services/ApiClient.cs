@@ -10,11 +10,13 @@ namespace URLShortener_Client.Services
     {
         private readonly HttpClient _httpClient;
         private readonly VariablesService _variablesService;
+        private readonly CommonFunctionsService _comFn;
 
-        public ApiClient(HttpClient httpClient, VariablesService variablesService)
+        public ApiClient(HttpClient httpClient, VariablesService variablesService, CommonFunctionsService comFn)
         {
             _httpClient = httpClient;
             _variablesService = variablesService;
+            _comFn = comFn;
         }
 
         // Generic GET request
@@ -89,24 +91,24 @@ namespace URLShortener_Client.Services
                             Email = result.Data.Email
                         };
 
-                        await _variablesService.SaveAuthInfoAsync(newAuth);
+                        await _comFn.SaveAuthInfoAsync(newAuth);
                         
                     }
                     else
                     {
                         // Failed refresh, clear auth
-                        await _variablesService.ClearAuthInfoAsync();
+                        await _comFn.ClearAuthInfoAsync();
                     }
                 }
                 else
                 {
                     // Failed refresh, clear auth
-                    await _variablesService.ClearAuthInfoAsync();
+                    await _comFn.ClearAuthInfoAsync();
                 }
             }
             catch
             {
-                await _variablesService.ClearAuthInfoAsync();
+                await _comFn.ClearAuthInfoAsync();
             }
         }
 

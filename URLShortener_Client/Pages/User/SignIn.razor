@@ -70,7 +70,7 @@
                 };
 
                 // Save globally
-                await Vs.SaveAuthInfoAsync(authInfo);
+                await ComFn.SaveAuthInfoAsync(authInfo);
                 Notifier.Emit("RefreshAuthInfo");
                 Vs.IsLoading = false;
                 await OnModalClose.InvokeAsync();

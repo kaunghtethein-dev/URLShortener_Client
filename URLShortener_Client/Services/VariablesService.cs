@@ -23,27 +23,27 @@ namespace URLShortener_Client.Services
                 _js.InvokeVoidAsync("AppJS.toggleLoading",_isLoading);
             }
         }
-        public AuthInfo? AuthInfo { get; private set; }
+        public AuthInfo? AuthInfo { get; set; }
         
 
-        private const string AuthInfoKey = "auth_info";
+        public string AuthInfoKey = "auth_info";
 
-        public async Task LoadAuthInfoAsync()
-        {
-            AuthInfo = await _localStorage.GetItemAsync<AuthInfo>(AuthInfoKey);
-        }
+        //public async Task LoadAuthInfoAsync()
+        //{
+        //    AuthInfo = await _localStorage.GetItemAsync<AuthInfo>(AuthInfoKey);
+        //}
 
-        public async Task SaveAuthInfoAsync(AuthInfo authInfo)
-        {
-            AuthInfo = authInfo;
-            await _localStorage.SetItemAsync(AuthInfoKey, authInfo);
-        }
+        //public async Task SaveAuthInfoAsync(AuthInfo authInfo)
+        //{
+        //    AuthInfo = authInfo;
+        //    await _localStorage.SetItemAsync(AuthInfoKey, authInfo);
+        //}
 
-        public async Task ClearAuthInfoAsync()
-        {
-            AuthInfo = null;
-            await _localStorage.RemoveItemAsync(AuthInfoKey);
-        }
+        //public async Task ClearAuthInfoAsync()
+        //{
+        //    AuthInfo = null;
+        //    await _localStorage.RemoveItemAsync(AuthInfoKey);
+        //}
     }
 
     public class AuthInfo : Dto_AuthResponse

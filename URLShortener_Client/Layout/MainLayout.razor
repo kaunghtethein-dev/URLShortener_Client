@@ -44,7 +44,7 @@
                                     </button>
                                 </div>
                                 <div class="user-menu-item">
-                                    <button type="button" class="btn-none user-menu-btn">
+                                    <button type="button" class="btn-none user-menu-btn" @onclick="ComFn.LogOut">
                                         <URLShortener_Client.Icons.LogoutIcon Width="20" Height="20" />
                                         Log Out
                                     </button>
@@ -94,33 +94,39 @@
     }
     private async Task OnReceiveEmit(string key, object? data ,string? actionName)
     {
+        Console.WriteLine("OnReceiveEmit key of MainLayout => "+key);
         if(key == "OpenSignIn")
         {
             await OpenLoginModal();
         }
         else if(key == "OpenSignUp")
         {
+            Console.WriteLine("Received signal to open signup");
             await OpenSignupModal();
         }
     }
     private async Task CloseLoginModal()
     {
         isOpenLoginModal = false;
+        StateHasChanged();
         await loginModal.Close();
     }
     private async Task OpenLoginModal()
     {
         isOpenLoginModal = true;
+        StateHasChanged();
         await loginModal.Open();
     }
     private async Task CloseSignupModal()
     {
         isOpenSignupModal = false;
+        StateHasChanged();
         await signUpModal.Close();
     }
     private async Task OpenSignupModal()
     {
         isOpenSignupModal = true;
+        StateHasChanged();
         await signUpModal.Open();
     }
     private void ToggleUserMenu()

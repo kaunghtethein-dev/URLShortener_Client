@@ -172,16 +172,19 @@
         </div>
     </div>
 </div>
+@if (Vs.AuthInfo == null)
+{
+    <div class="ready-container">
+        <div class="ready-main-title">Ready to Get Started?</div>
+        <div class="ready-main-desc">
+            Sign up now to unlock analytics, custom links, and advanced features.
+        </div>
+        <div class="create-acc-container">
+            <button type="button" class="btn-none create-acc-btn" @onclick="OpenSignUp">Create Free Account</button>
+        </div>
+    </div>
+}
 
-<div class="ready-container">
-    <div class="ready-main-title">Ready to Get Started?</div>
-    <div class="ready-main-desc">
-        Sign up now to unlock analytics, custom links, and advanced features.
-    </div>
-    <div class="create-acc-container">
-        <button type="button" class="btn-none create-acc-btn">Create Free Account</button>
-    </div>
-</div>
 <div class="footer-section">
     © 2025 Kaung Htet Hein.
 </div>
@@ -223,13 +226,21 @@
     }
     private async Task CreateShortUrl()
     {
-        ValidateOriginalUrl();
-        ValidateAlias();
-
-        if (!string.IsNullOrWhiteSpace(errorMsg["orgUrl"]) || !string.IsNullOrWhiteSpace(errorMsg["alias"])) return;
-
         try
         {
+            ValidateOriginalUrl();
+            if (string.IsNullOrWhiteSpace(shortUrlParam.CustomAlias))
+            {
+                shortUrlParam.CustomAlias = null;
+                errorMsg["alias"] = string.Empty;
+            }
+            else
+            {
+                ValidateAlias();
+            }
+
+            if (!string.IsNullOrWhiteSpace(errorMsg["orgUrl"]) || !string.IsNullOrWhiteSpace(errorMsg["alias"])) return;
+
             Vs.IsLoading = true;
             if(Vs.AuthInfo != null)
             {
@@ -280,7 +291,7 @@
     {
         if (shortUrlParam.CustomAlias != null)
         {
-            if (ComFn.ContainsInvalidUrlCharacters(shortUrlParam.CustomAlias))
+            if (!ComFn.IsSafeSlug(shortUrlParam.CustomAlias))
             {
                 errorMsg["alias"] = "Alias contain invalid characters";
             }
@@ -322,6 +333,12 @@
         {
             shortUrlParam.ExpiresAt = null;
         }
+    }
+    private void OpenSignUp()
+    {
+        Console.WriteLine("Opensignup triggered");
+        Notifier.Emit("OpenSignUp");
+        StateHasChanged();
     }
     public void Dispose()
     {

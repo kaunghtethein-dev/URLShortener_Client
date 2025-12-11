@@ -135,7 +135,7 @@
                 };
 
                 // Save globally
-                await Vs.SaveAuthInfoAsync(authInfo);
+                await ComFn.SaveAuthInfoAsync(authInfo);
                 Notifier.Emit("RefreshAuthInfo");
             }
             else

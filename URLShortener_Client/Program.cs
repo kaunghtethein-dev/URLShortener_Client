@@ -41,9 +41,9 @@ namespace URLShortener_Client
             builder.Services.AddScoped<CommonFunctionsService>();
             var host = builder.Build();
 
-            // --- Load AuthInfo from LocalStorage at startup ---
-            var variablesService = host.Services.GetRequiredService<VariablesService>();
-            await variablesService.LoadAuthInfoAsync();
+            // Load AuthInfo from LocalStorage at startup 
+            var comFn = host.Services.GetRequiredService<CommonFunctionsService>();
+            await comFn.LoadAuthInfoAsync();
 
             await host.RunAsync();
         }
