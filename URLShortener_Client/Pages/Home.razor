@@ -247,12 +247,10 @@
                 shortUrlParam.UserId = Vs.AuthInfo.UserId;
             }
             SetExpireTime();
-            await JS.InvokeVoidAsync("console.log", "shortURLParam => ", shortUrlParam);
             var result = await ApiClient.PostAsync<DataResult<Dto_ShortUrl>>("api/shorturl/create", shortUrlParam);
             if (result != null && result.Success)
             {
                 resultUrl = result.Data;
-                await JS.InvokeVoidAsync("console.log", "shortURL Response => ", resultUrl);
                 viewMode = ViewMode.SuccessView;
                 StateHasChanged();
             }

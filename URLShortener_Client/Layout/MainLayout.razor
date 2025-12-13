@@ -38,7 +38,7 @@
                         {
                             <div class="user-menu">
                                 <div class="user-menu-item">
-                                    <button type="button" class="btn-none user-menu-btn">
+                                    <button type="button" class="btn-none user-menu-btn" @onclick='()=>{isOpenUserMenu = false;NavigationManager.NavigateTo("/analytics");}'>
                                         <URLShortener_Client.Icons.GraphIcon Width="20" Height="20" />
                                         Analytics
                                     </button>

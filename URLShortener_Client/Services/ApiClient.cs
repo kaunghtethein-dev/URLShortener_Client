@@ -88,7 +88,8 @@ namespace URLShortener_Client.Services
                             RefreshToken = result.Data.RefreshToken,
                             AccessTokenExpiresAt = result.Data.AccessTokenExpiresAt,
                             UserName = result.Data.UserName,
-                            Email = result.Data.Email
+                            Email = result.Data.Email,
+                            UserId = result.Data.UserId,
                         };
 
                         await _comFn.SaveAuthInfoAsync(newAuth);
