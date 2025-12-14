@@ -43,9 +43,7 @@
             });
     },
     createLast7DaysChart: function (elementId, data) {
-        console.log("createLast7DaysChart triggered");
         const ctx = document.getElementById(elementId);
-        console.log("ctx => ", ctx);
         if (ctx) {
             const labels = data.map(item => {
                 if (item.date) {
@@ -75,6 +73,9 @@
                     }]
                 },
                 options: {
+                    responsive: true, // Default is true
+                    maintainAspectRatio: true, // Keep aspect ratio
+                    aspectRatio: 1.5,
                     indexAxis: 'y',
                     x: {
                         ticks: {
@@ -92,6 +93,96 @@
             });
         }
         
+    },
+    createDeviceTypesChart: function (elementId, data) {
+        const ctx = document.getElementById(elementId);
+        if (ctx) {
+            const labels = data.map(item => {
+                if (item.deviceType) {
+                    return item.deviceType;
+                }
+                return '';
+            });
+
+            const clickData = data.map(item => item.clickCount || 0);
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Click Counts',
+                        data: clickData,
+                        backgroundColor: [
+                            '#a41bee',
+                            '#09c341',
+                            '#f67f1e'
+                        ],
+                    }]
+                },
+                options: {
+                    responsive: true, // Default is true
+                    maintainAspectRatio: true, // Keep aspect ratio
+                    indexAxis: 'y',
+                    x: {
+                        ticks: {
+                            // Ensure whole numbers on y-axis
+                            callback: function (value) {
+                                if (Number.isInteger(value)) {
+                                    return value;
+                                }
+                                return '';
+                            },
+                            stepSize: 1
+                        },
+                    }
+                }
+            });
+        }
+
+    },
+    createTopCountriesChart: function (elementId, data) {
+        const ctx = document.getElementById(elementId);
+        if (ctx) {
+            const labels = data.map(item => {
+                if (item.country) {
+                    return item.country;
+                }
+                return '';
+            });
+
+            const clickData = data.map(item => item.clicks || 0);
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Click Counts',
+                        data: clickData,
+                        backgroundColor: [
+                            '#235ce5',
+                        ],
+                    }]
+                },
+                options: {
+                    responsive: true, // Default is true
+                    maintainAspectRatio: true, // Keep aspect ratio
+                    indexAxis: 'y',
+                    x: {
+                        ticks: {
+                            // Ensure whole numbers on y-axis
+                            callback: function (value) {
+                                if (Number.isInteger(value)) {
+                                    return value;
+                                }
+                                return '';
+                            },
+                            stepSize: 1
+                        },
+                    }
+                }
+            });
+        }
+
     }
 
 };

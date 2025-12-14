@@ -1,81 +1,135 @@
 ﻿@page "/analytics"
 
-@if (isFinished)
+@if (Vs.AuthInfo != null)
 {
-    <div class="analytics-container">
-        <div class="analytics-head-section">
-            <div class="d-flex align-items-center">
-                <span class="text-white"><URLShortener_Client.Icons.GraphIcon Width="40" Height="40" /></span>
-                <span class="analytics-header-text">Analytics Dashboard</span>
+    @if (isFinished)
+    {
+        <div class="analytics-container">
+            <div class="analytics-head-section">
+                <div class="d-flex align-items-center">
+                    <span class="text-white"><URLShortener_Client.Icons.GraphIcon Width="40" Height="40" /></span>
+                    <span class="analytics-header-text">Analytics Dashboard</span>
+                </div>
+                <div class="analytics-desc">Track performance and insights for all your shortened URLs</div>
             </div>
-            <div class="analytics-desc">Track performance and insights for all your shortened URLs</div>
-        </div>
-        <div class="summary-cards-section">
-            <div class="summary-card total-click">
-                <div class="summary-header">
-                    <div class="summary-header-text">Total Clicks</div>
-                    <div class="summary-header-icon"><URLShortener_Client.Icons.ClickIcon Width="25" Height="25" /></div>
+            <div class="summary-cards-section">
+                <div class="summary-card total-click">
+                    <div class="summary-header">
+                        <div class="summary-header-text">Total Clicks</div>
+                        <div class="summary-header-icon"><URLShortener_Client.Icons.ClickIcon Width="25" Height="25" /></div>
+                    </div>
+                    <div class="summary-num">
+                        @summaryData.TotalClicks
+                    </div>
                 </div>
-                <div class="summary-num">
-                    @summaryData.TotalClicks
+                <div class="summary-card total-urls">
+                    <div class="summary-header">
+                        <div class="summary-header-text">Total URLs</div>
+                        <div class="summary-header-icon"><URLShortener_Client.Icons.UrlLogo2 Width="25" Height="25" /></div>
+                    </div>
+                    <div class="summary-num">
+                        @summaryData.TotalShortUrls
+                    </div>
+                </div>
+                <div class="summary-card avg-clicks">
+                    <div class="summary-header">
+                        <div class="summary-header-text">Avg. Clicks</div>
+                        <div class="summary-header-icon"><URLShortener_Client.Icons.GraphIcon Width="25" Height="25" /></div>
+                    </div>
+                    <div class="summary-num">
+                        @summaryData.AverageClicks
+                    </div>
                 </div>
             </div>
-            <div class="summary-card total-urls">
-                <div class="summary-header">
-                    <div class="summary-header-text">Total URLs</div>
-                    <div class="summary-header-icon"><URLShortener_Client.Icons.UrlLogo2 Width="25" Height="25" /></div>
+            <div class="chart-section">
+                <div class="chart-card">
+                    <div class="chart-card-header">
+                        <div class="chart-card-icon last7days"><URLShortener_Client.Icons.CalendarIcon Width="30" Height="30" /></div>
+                        <div class="chart-card-text">Last 7 Days Activity</div>
+                    </div>
+                    <div class="chart-card-body">
+                        <canvas class="w-100 h-100" id="last7days-chart"></canvas>
+                    </div>
+
                 </div>
-                <div class="summary-num">
-                    @summaryData.TotalShortUrls
-                </div>
-            </div>
-            <div class="summary-card avg-clicks">
-                <div class="summary-header">
-                    <div class="summary-header-text">Avg. Clicks</div>
-                    <div class="summary-header-icon"><URLShortener_Client.Icons.GraphIcon Width="25" Height="25" /></div>
-                </div>
-                <div class="summary-num">
-                    @summaryData.AverageClicks
-                </div>
-            </div>
-        </div>
-        <div class="chart-section">
-            <div class="chart-card">
-                <div class="chart-card-header">
-                    <div class="chart-card-icon last7days"><URLShortener_Client.Icons.CalendarIcon Width="30" Height="30" /></div>
-                    <div class="chart-card-text">Last 7 Days Activity</div>
-                </div>
-                <div class="chart-card-body">
-                    <canvas class="w-100 h-100" id="last7days-chart"></canvas>
+                <div class="chart-card">
+                    <div class="chart-card-header">
+                        <div class="chart-card-icon top-performing"><URLShortener_Client.Icons.RisingArrowLineIcon Width="30" Height="30" /></div>
+                        <div class="chart-card-text">Top Performing URLs</div>
+                    </div>
+                    <div class="chart-card-body">
+                        @if (topPerformingUrlData != null && topPerformingUrlData.Any())
+                        {
+                            foreach (var (index, url) in topPerformingUrlData.Index())
+                            {
+                                <div class="top-url-container">
+                                    <div class="top-url-leftside">
+                                        <div class="top-url-index">#@(index + 1)</div>
+                                        <div class="top-url-desc">
+                                            <div class="fw-bold">@(appSettings.API_BaseURL.Replace("https://", "") + url.ShortCode)</div>
+                                            <div class="font-color">@url.OriginalUrl</div>
+                                        </div>
+                                    </div>
+                                    <div class="top-url-rightside">
+                                        <div class="top-url-numclick">@url.ClickCount</div>
+                                        <div class="font-color">clicks</div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    </div>
+
                 </div>
 
             </div>
-            <div class="chart-card">
-                <div class="chart-card-header">
-                    <div class="chart-card-icon top-performing"><URLShortener_Client.Icons.RisingArrowLineIcon Width="30" Height="30" /></div>
-                    <div class="chart-card-text">Top Performing URLs</div>
+            <div class="chart-section">
+                <div class="chart-card">
+                    <div class="chart-card-header">
+                        <div class="chart-card-icon deviceTypes"><URLShortener_Client.Icons.DeviceIcon Width="30" Height="30" /></div>
+                        <div class="chart-card-text">Device Types</div>
+                    </div>
+                    <div class="chart-card-body">
+                        <canvas class="w-100 h-100" id="device-chart"></canvas>
+                    </div>
+
                 </div>
-                <div class="chart-card-body">
+                <div class="chart-card">
+                    <div class="chart-card-header">
+                        <div class="chart-card-icon top-countries"><URLShortener_Client.Icons.LocationIcon Width="30" Height="30" /></div>
+                        <div class="chart-card-text">Top Countries</div>
+                    </div>
+                    <div class="chart-card-body">
+                        <canvas class="w-100 h-100" id="top-country-chart"></canvas>
+                    </div>
+
                 </div>
 
             </div>
-
         </div>
-    </div>
+    }
+    <MessageModal @ref="messageModal"></MessageModal>
 }
-<MessageModal @ref="messageModal"></MessageModal>
+else
+{
+    <div>Sorry, you are not a registered user.</div>
+}
+
 @code {
     private MessageModal messageModal = new();
     private Dto_ClickSummary summaryData = new();
     private List<Dto_DailyClickCount> last7DaysData = new();
+    private List<Dto_TopPerformingUrl> topPerformingUrlData = new();
+    private List<Dto_DeviceTypeStats> deviceTypeData = new();
+    private List<Dto_CountryAnalytics> topCountryData = new();
     private bool isFinished;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
+            if (Vs.AuthInfo == null) return;
             Vs.IsLoading = true;
-            await Task.WhenAll(GetSummaryData(), GetLast7DaysActivity());
+            await Task.WhenAll(GetSummaryData(), GetLast7DaysActivity(), GetTopPerformingURLs(), GetDeviceTypes(), GetTopCountries());
             isFinished = true;
             StateHasChanged();
             await CreateCharts();
@@ -138,7 +192,91 @@
                 await messageModal.ShowMessage(MessageType.Info, string.Empty, result?.Message ?? "Something went wrong.");
             }
         }
-        catch(Exception ex)
+        catch (Exception ex)
+        {
+            Vs.IsLoading = false;
+            await messageModal.ShowMessage(MessageType.Error, "Critical Message", ex.Message);
+        }
+    }
+    private async Task GetTopPerformingURLs()
+    {
+        try
+        {
+            var result = await ApiClient.GetAsync<DataResult<List<Dto_TopPerformingUrl>>>($"api/analytics/topurls");
+            if (result != null && result.Success)
+            {
+                if (result.Data != null)
+                {
+                    topPerformingUrlData = result.Data;
+                }
+                else
+                {
+                    topPerformingUrlData = new();
+                }
+            }
+            else
+            {
+                Vs.IsLoading = false;
+                await messageModal.ShowMessage(MessageType.Info, string.Empty, result?.Message ?? "Something went wrong.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Vs.IsLoading = false;
+            await messageModal.ShowMessage(MessageType.Error, "Critical Message", ex.Message);
+        }
+    }
+    private async Task GetDeviceTypes()
+    {
+        try
+        {
+            var result = await ApiClient.GetAsync<DataResult<List<Dto_DeviceTypeStats>>>($"api/analytics/devicetypes");
+            if (result != null && result.Success)
+            {
+                if (result.Data != null)
+                {
+                    deviceTypeData = result.Data;
+                }
+                else
+                {
+                    deviceTypeData = new();
+                }
+            }
+            else
+            {
+                Vs.IsLoading = false;
+                await messageModal.ShowMessage(MessageType.Info, string.Empty, result?.Message ?? "Something went wrong.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Vs.IsLoading = false;
+            await messageModal.ShowMessage(MessageType.Error, "Critical Message", ex.Message);
+        }
+    }
+    private async Task GetTopCountries()
+    {
+        try
+        {
+            var result = await ApiClient.GetAsync<DataResult<List<Dto_CountryAnalytics>>>($"api/analytics/topcountries");
+            if (result != null && result.Success)
+            {
+                if (result.Data != null)
+                {
+                    topCountryData = result.Data;
+                }
+                else
+                {
+                    topCountryData = new();
+                }
+            }
+            else
+            {
+                Vs.IsLoading = false;
+                await messageModal.ShowMessage(MessageType.Info, string.Empty, result?.Message ?? "Something went wrong.");
+            }
+        }
+        catch (Exception ex)
         {
             Vs.IsLoading = false;
             await messageModal.ShowMessage(MessageType.Error, "Critical Message", ex.Message);
@@ -147,6 +285,9 @@
     private async Task CreateCharts()
     {
         await JS.InvokeVoidAsync("AppJS.createLast7DaysChart", "last7days-chart", last7DaysData);
+        await JS.InvokeVoidAsync("AppJS.createDeviceTypesChart", "device-chart", deviceTypeData);
+        await JS.InvokeVoidAsync("AppJS.createTopCountriesChart", "top-country-chart", topCountryData);
+
         StateHasChanged();
     }
 }
