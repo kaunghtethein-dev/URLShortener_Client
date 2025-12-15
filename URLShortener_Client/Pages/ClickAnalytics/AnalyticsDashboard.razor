@@ -105,6 +105,45 @@
                 </div>
 
             </div>
+            <div class="allurls-container">
+                <div class="chart-card">
+                    <div class="chart-card-header">
+                        <div class="chart-card-text">All Your URLs</div>
+                    </div>
+                    <div class="chart-card-body">
+                        @if(allurlData != null && allurlData.Any())
+                        {
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Short URL</th>
+                                        <th scope="col">Original URL</th>
+                                        <th scope="col">Clicks</th>
+                                        <th scope="col">Created</th>
+                                        <th scope="col">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach(var url in allurlData)
+                                    {
+                                        <tr>
+                                            <td>@(appSettings.API_BaseURL.Replace("https://", "") + url.ShortCode)</td>
+                                            <td>@url.OriginalUrl</td>
+                                            <td>@url.ClickCount</td>
+                                            <td>@url.CreatedAt.ToString("dd/MM/yyyy")</td>
+                                            <td><a href="@(appSettings.API_BaseURL+url.ShortCode)" target="_blank">Visit<URLShortener_Client.Icons.OpenExternalIcon Width="25" Height="25"/></a></td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        }
+                        else
+                        {
+                            <div class="text-center fw-bold">No Data</div>
+                        }
+                    </div>
+                </div>
+            </div>
         </div>
     }
     <MessageModal @ref="messageModal"></MessageModal>
@@ -121,6 +160,7 @@ else
     private List<Dto_TopPerformingUrl> topPerformingUrlData = new();
     private List<Dto_DeviceTypeStats> deviceTypeData = new();
     private List<Dto_CountryAnalytics> topCountryData = new();
+    private List<Dto_ShortUrl> allurlData = new();
     private bool isFinished;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -129,7 +169,7 @@ else
         {
             if (Vs.AuthInfo == null) return;
             Vs.IsLoading = true;
-            await Task.WhenAll(GetSummaryData(), GetLast7DaysActivity(), GetTopPerformingURLs(), GetDeviceTypes(), GetTopCountries());
+            await Task.WhenAll(GetSummaryData(), GetLast7DaysActivity(), GetTopPerformingURLs(), GetDeviceTypes(), GetTopCountries(),GetAllUrls());
             isFinished = true;
             StateHasChanged();
             await CreateCharts();
@@ -167,6 +207,8 @@ else
         catch (Exception ex)
         {
             Vs.IsLoading = false;
+            Console.WriteLine("ex.StackTrace => " + ex.StackTrace);
+            Console.WriteLine("ex.InnerException => " + ex.InnerException?.Message);
             await messageModal.ShowMessage(MessageType.Error, "Critical Message", ex.Message);
         }
     }
@@ -268,6 +310,34 @@ else
                 else
                 {
                     topCountryData = new();
+                }
+            }
+            else
+            {
+                Vs.IsLoading = false;
+                await messageModal.ShowMessage(MessageType.Info, string.Empty, result?.Message ?? "Something went wrong.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Vs.IsLoading = false;
+            await messageModal.ShowMessage(MessageType.Error, "Critical Message", ex.Message);
+        }
+    }
+    private async Task GetAllUrls()
+    {
+        try
+        {
+            var result = await ApiClient.GetAsync<DataResult<List<Dto_ShortUrl>>>($"api/shorturl/getbyuser");
+            if (result != null && result.Success)
+            {
+                if (result.Data != null)
+                {
+                    allurlData = result.Data;
+                }
+                else
+                {
+                    allurlData = new();
                 }
             }
             else
