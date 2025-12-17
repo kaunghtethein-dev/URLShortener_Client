@@ -8,7 +8,7 @@
     <div class="input-container">
         <div class="form-input-title">Email Address</div>
         <div>
-            <input @bind="signupParam.Email" class="text-input @(!string.IsNullOrWhiteSpace(errorMsg["email"]) ? "error" : "")" type="text" placeholder="you@example.com" />
+            <input @bind="signupParam.Email" @bind:event="oninput" class="text-input @(!string.IsNullOrWhiteSpace(errorMsg["email"]) ? "error" : "")" type="text" placeholder="you@example.com" @onkeydown="@(e => HandleKeyDown(e))" />
         </div>
         @if (!string.IsNullOrWhiteSpace(errorMsg["email"]))
         {
@@ -18,7 +18,7 @@
     <div class="input-container">
         <div class="form-input-title">User Name</div>
         <div>
-            <input @bind="signupParam.UserName" class="text-input @(!string.IsNullOrWhiteSpace(errorMsg["username"]) ? "error" : "")" type="text" placeholder="Enter your user name" />
+            <input @bind="signupParam.UserName" @bind:event="oninput" class="text-input @(!string.IsNullOrWhiteSpace(errorMsg["username"]) ? "error" : "")" type="text" placeholder="Enter your user name" @onkeydown="@(e => HandleKeyDown(e))" />
         </div>
         @if (!string.IsNullOrWhiteSpace(errorMsg["username"]))
         {
@@ -28,7 +28,7 @@
     <div class="input-container">
         <div class="form-input-title">Password</div>
         <div>
-            <input @bind="signupParam.Password" class="text-input @(!string.IsNullOrWhiteSpace(errorMsg["password"]) ? "error" : "")" type="password" placeholder="Enter your password" />
+            <input @bind="signupParam.Password" @bind:event="oninput" class="text-input @(!string.IsNullOrWhiteSpace(errorMsg["password"]) ? "error" : "")" type="password" placeholder="Enter your password" @onkeydown="@(e => HandleKeyDown(e))" />
         </div>
         @if (!string.IsNullOrWhiteSpace(errorMsg["password"]))
         {
@@ -202,5 +202,12 @@
     {
         Notifier.Emit("OpenSignIn");
         OnModalClose.InvokeAsync();
+    }
+    private async void HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Code == "Enter" || e.Key == "Enter")
+        {
+            await HandleSignup();
+        }
     }
 }

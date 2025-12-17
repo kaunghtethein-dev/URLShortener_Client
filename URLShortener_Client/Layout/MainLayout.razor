@@ -1,11 +1,11 @@
 ﻿@inherits LayoutComponentBase
 @implements IDisposable
-<div class="page">
+<div class="">
    
     <main>
         <div class="top-menu">
             <div class="left-side">
-                <button type="button" class="btn-none btn-url-logo">
+                <button type="button" class="btn-none btn-url-logo" @onclick='()=>{NavigationManager.NavigateTo("/");}'>
                     <span class="url-logo"><URLShortener_Client.Icons.UrlLogo Width="50" Height="50" /></span>
                     <span class="app-name">UrLink</span>
                 </button>
@@ -15,11 +15,11 @@
                 {
                     <button class="btn-none btn-signin" @onclick="OpenLoginModal">
                         <span class="font-color"><URLShortener_Client.Icons.SignInIcon Width="25" Height="25" /></span>
-                        <span class="font-color">Sign In</span>
+                        <span class="font-color d-xs-none">Sign In</span>
                     </button>
                     <button class="btn-none btn-signup" @onclick="OpenSignupModal">
                         <span class="text-light"><URLShortener_Client.Icons.SignUpIcon Width="25" Height="25" /></span>
-                        <span class="text-light">Sign Up</span>
+                        <span class="text-light d-xs-none">Sign Up</span>
                     </button>
                 }
                 else //if user is a registered user
@@ -94,14 +94,12 @@
     }
     private async Task OnReceiveEmit(string key, object? data ,string? actionName)
     {
-        Console.WriteLine("OnReceiveEmit key of MainLayout => "+key);
         if(key == "OpenSignIn")
         {
             await OpenLoginModal();
         }
         else if(key == "OpenSignUp")
         {
-            Console.WriteLine("Received signal to open signup");
             await OpenSignupModal();
         }
     }

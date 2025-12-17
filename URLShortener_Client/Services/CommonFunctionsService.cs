@@ -1,4 +1,5 @@
-﻿using Microsoft.JSInterop;
+﻿using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 using System.Text.RegularExpressions;
 
 namespace URLShortener_Client.Services
@@ -8,12 +9,14 @@ namespace URLShortener_Client.Services
         private readonly LocalStorageService _localStorage;
         private readonly IJSRuntime _js;
         private readonly VariablesService _vs;
+        private readonly NavigationManager _navManager;
 
-        public CommonFunctionsService(LocalStorageService localStorage, IJSRuntime js, VariablesService vs)
+        public CommonFunctionsService(LocalStorageService localStorage, IJSRuntime js, VariablesService vs,NavigationManager navManager)
         {
             _localStorage = localStorage;
             _js = js;
             _vs = vs;
+            _navManager = navManager;
         }
         public async Task LoadAuthInfoAsync()
         {
@@ -32,6 +35,7 @@ namespace URLShortener_Client.Services
         public async Task LogOut()
         {
             await ClearAuthInfoAsync();
+            _navManager.NavigateTo("/");
             await _js.InvokeVoidAsync("location.reload");
         }
         public bool IsEmailValidFormat(string email)

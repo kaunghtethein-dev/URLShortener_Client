@@ -9,7 +9,7 @@
     <div class="input-container">
         <div class="form-input-title">Email Address</div>
         <div>
-            <input @bind="loginParam.Email" class="text-input @(!string.IsNullOrWhiteSpace(errorMsg["email"])?"error":"")" type="text" placeholder="you@example.com"/>
+            <input @bind="loginParam.Email" @bind:event="oninput" class="text-input @(!string.IsNullOrWhiteSpace(errorMsg["email"]) ? "error" : "")" type="text" placeholder="you@example.com" @onkeydown="@(e => HandleKeyDown(e))" />
         </div>
         @if (!string.IsNullOrWhiteSpace(errorMsg["email"]))
         {
@@ -19,7 +19,7 @@
     <div class="input-container">
         <div class="form-input-title">Password</div>
         <div>
-            <input @bind="loginParam.Password" class="text-input @(!string.IsNullOrWhiteSpace(errorMsg["password"]) ? "error" : "")" type="password" placeholder="Enter your password" />
+            <input @bind="loginParam.Password" @bind:event="oninput" class="text-input @(!string.IsNullOrWhiteSpace(errorMsg["password"]) ? "error" : "")" type="password" placeholder="Enter your password" @onkeydown="@(e => HandleKeyDown(e))" />
             @if (!string.IsNullOrWhiteSpace(errorMsg["password"]))
             {
                 <div class="error-text mt-1">@errorMsg["password"]</div>
@@ -126,5 +126,12 @@
     {
         Notifier.Emit("OpenSignUp");
         OnModalClose.InvokeAsync();
+    }
+    private async void HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Code == "Enter" || e.Key == "Enter")
+        {
+            await LogIn();
+        }
     }
 }

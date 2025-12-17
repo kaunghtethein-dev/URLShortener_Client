@@ -17,13 +17,14 @@
         }
     },
     toggleLoading: function (loadingStart) {
-        console.log("loadingStart => ", loadingStart);
         var loader = document.getElementById("loading");
         if (loader) {
             if (loadingStart) {
+                document.body.classList.add('no-scroll');
                 loader.style.display = "block";
             }
             else {
+                document.body.classList.remove('no-scroll');
                 loader.style.display = "none";
             }
         }

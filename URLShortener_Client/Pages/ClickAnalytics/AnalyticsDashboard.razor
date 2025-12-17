@@ -77,6 +77,10 @@
                                 </div>
                             }
                         }
+                        else
+                        {
+                            <div class="text-center">No Data</div>
+                        }
                     </div>
 
                 </div>
@@ -110,7 +114,7 @@
                     <div class="chart-card-header">
                         <div class="chart-card-text">All Your URLs</div>
                     </div>
-                    <div class="chart-card-body">
+                    <div class="chart-card-body overflow-y-auto">
                         @if(allurlData != null && allurlData.Any())
                         {
                             <table class="table">

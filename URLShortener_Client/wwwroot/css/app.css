@@ -830,3 +830,14 @@ span.analytics-header-text {
 }
 
 /*---------------------*/
+
+@media(max-width:430px){
+    .d-xs-none{
+        display: none;
+    }
+}
+/* Class to prevent scrolling */
+.no-scroll {
+    overflow: hidden;
+    height: 100vh;
+}
