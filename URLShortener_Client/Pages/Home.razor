@@ -17,11 +17,11 @@
                 <div class="extra-feat-title text-start">URL to Shorten</div>
             }
 
-            <input type="text" class="shorten-input @(!string.IsNullOrEmpty(errorMsg["orgUrl"]) ? "error" : "")" placeholder="https://example.com/your-long-url" @bind="@shortUrlParam.OriginalUrl" @bind:event="oninput" />
+            <input type="text" class="shorten-input @(!string.IsNullOrEmpty(errorMsg["orgUrl"]) ? "error" : "")" placeholder="https://example.com/your-long-url" @bind="@shortUrlParam.OriginalUrl" @bind:event="oninput" @onchange="ValidateOriginalUrl" />
 
             @if (!string.IsNullOrWhiteSpace(errorMsg["orgUrl"]))
             {
-                <div class="error-text text-center blink mt-4"><URLShortener_Client.Icons.InfoIcon Width="25" Height="25" /> @errorMsg</div>
+                <div class="error-text text-center  mt-4"><URLShortener_Client.Icons.InfoIcon Width="25" Height="25" /> @errorMsg["orgUrl"]</div>
             }
 
         </div>
@@ -31,7 +31,7 @@
                 <div class="col-12 col-sm-6 p-0 pe-sm-1">
                     <div class="extra-feature">
                         <div class="extra-feat-title"><URLShortener_Client.Icons.TagIcon Width="25" Height="25" /> Alias (Optional)</div>
-                        <input type="text" class="shorten-input @(!string.IsNullOrEmpty(errorMsg["alias"]) ? "error" : "")" placeholder="Add alias here" @bind="@shortUrlParam.CustomAlias" @bind:event="oninput" />
+                        <input type="text" class="shorten-input @(!string.IsNullOrEmpty(errorMsg["alias"]) ? "error" : "")" placeholder="Add alias here" @bind="@shortUrlParam.CustomAlias" @bind:event="oninput" @onchange="ValidateAlias" />
                     </div>
                 </div>
                 <div class="col-12 col-sm-6 p-0 ps-sm-1">
@@ -45,10 +45,10 @@
                         </select>
                     </div>
                 </div>
-                @if (!string.IsNullOrWhiteSpace(errorMsg["orgUrl"]))
+               @*  @if (!string.IsNullOrWhiteSpace(errorMsg["orgUrl"]))
                 {
                     <div class="error-text mt-1">@errorMsg["orgUrl"]</div>
-                }
+                } *@
                 @if (!string.IsNullOrWhiteSpace(errorMsg["alias"]))
                 {
                     <div class="error-text mt-1">@errorMsg["alias"]</div>
@@ -81,7 +81,23 @@
                     <div class="success-url-title">Shortened URL</div>
                     <div class="d-flex justify-content-between">
                         <div class="success-url blue-color">@(appSettings.API_BaseURL + resultUrl.ShortCode)</div>
-                        <button type="button" class="btn-none btn-copy-url" @onclick='() => { JS.InvokeVoidAsync("AppJS.copyToClipboard", appSettings.API_BaseURL + resultUrl.ShortCode); }'><URLShortener_Client.Icons.CopyIcon Width="20" Height="20" />Copy</button>
+                        <button type="button" class="btn-none btn-copy-url @(isCopied ? "copied":"")" @onclick="CopyUrl">
+                            @if (isCopied)
+                            {
+                                <span>
+                                    <URLShortener_Client.Icons.CheckIcon Width="20" Height="20" />
+                                    <span class="d-xs-none">Copied</span>
+                                </span>
+                            }
+                            else
+                            {
+                                <span>
+                                    <URLShortener_Client.Icons.CopyIcon Width="20" Height="20" />
+                                    <span class="d-xs-none">Copy</span>
+                                </span>
+                            }
+                            
+                         </button>
                     </div>
 
                 </div>
@@ -212,6 +228,7 @@
     }
     private ViewMode viewMode = ViewMode.MainView;
     private ExpireDuration expireDuration = ExpireDuration.Never;
+    private bool isCopied;
 
     protected override void OnInitialized()
     {
@@ -336,6 +353,19 @@
     {
         Notifier.Emit("OpenSignUp");
         StateHasChanged();
+    }
+    private async Task CopyUrl()
+    {
+        if(resultUrl != null)
+        {
+            await JS.InvokeVoidAsync("AppJS.copyToClipboard", appSettings.API_BaseURL + resultUrl.ShortCode);
+            isCopied = true;
+            StateHasChanged();
+            await Task.Delay(1000);
+            isCopied = false;
+            StateHasChanged();
+        }
+        
     }
     public void Dispose()
     {

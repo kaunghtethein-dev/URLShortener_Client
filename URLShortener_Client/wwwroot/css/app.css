@@ -569,11 +569,17 @@ input.error {
     justify-content: center;
     gap: 5px;
     background: #235ce5;
-    color: white;
+    
     border-radius: 10px;
     padding: 10px;
 }
-.qrImg{
+    .btn-copy-url span {
+        color: white;
+    }
+    .btn-copy-url.copied {
+        background: #4b5563;
+    }
+.qrImg {
     width: 35%;
     height: 35%;
 }

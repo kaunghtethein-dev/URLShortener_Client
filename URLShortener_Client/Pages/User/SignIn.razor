@@ -9,7 +9,7 @@
     <div class="input-container">
         <div class="form-input-title">Email Address</div>
         <div>
-            <input @bind="loginParam.Email" @bind:event="oninput" class="text-input @(!string.IsNullOrWhiteSpace(errorMsg["email"]) ? "error" : "")" type="text" placeholder="you@example.com" @onkeydown="@(e => HandleKeyDown(e))" />
+            <input @bind="loginParam.Email" @bind:event="oninput" class="text-input @(!string.IsNullOrWhiteSpace(errorMsg["email"]) ? "error" : "")" type="text" placeholder="you@example.com" @onkeydown="@(e => HandleKeyDown(e))" @onchange="ValidateEmail" />
         </div>
         @if (!string.IsNullOrWhiteSpace(errorMsg["email"]))
         {
@@ -19,7 +19,7 @@
     <div class="input-container">
         <div class="form-input-title">Password</div>
         <div>
-            <input @bind="loginParam.Password" @bind:event="oninput" class="text-input @(!string.IsNullOrWhiteSpace(errorMsg["password"]) ? "error" : "")" type="password" placeholder="Enter your password" @onkeydown="@(e => HandleKeyDown(e))" />
+            <input @bind="loginParam.Password" @bind:event="oninput" class="text-input @(!string.IsNullOrWhiteSpace(errorMsg["password"]) ? "error" : "")" type="password" placeholder="Enter your password" @onkeydown="@(e => HandleKeyDown(e))" @onchange="ValidatePassword" />
             @if (!string.IsNullOrWhiteSpace(errorMsg["password"]))
             {
                 <div class="error-text mt-1">@errorMsg["password"]</div>
