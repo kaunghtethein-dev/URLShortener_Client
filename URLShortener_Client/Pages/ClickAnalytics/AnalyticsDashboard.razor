@@ -173,7 +173,13 @@ else
         {
             if (Vs.AuthInfo == null) return;
             Vs.IsLoading = true;
-            await Task.WhenAll(GetSummaryData(), GetLast7DaysActivity(), GetTopPerformingURLs(), GetDeviceTypes(), GetTopCountries(),GetAllUrls());
+            await GetSummaryData();
+            await GetLast7DaysActivity();
+            await GetTopPerformingURLs();
+            await GetDeviceTypes();
+            await GetTopCountries();
+            await GetAllUrls();
+          
             isFinished = true;
             StateHasChanged();
             await CreateCharts();

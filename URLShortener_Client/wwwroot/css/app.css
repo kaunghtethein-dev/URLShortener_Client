@@ -533,6 +533,14 @@ input.error {
 
 .completed-container {
     margin-top: 20px;
+    margin-left:auto;
+    margin-right: auto;
+    width: 60%;
+}
+@media(max-width: 768px){
+    .completed-container {
+        width: 100%;
+    }
 }
 
 .success-container {
@@ -580,8 +588,20 @@ input.error {
         background: #4b5563;
     }
 .qrImg {
-    width: 35%;
-    height: 35%;
+    width: 40%;
+    height: 40%;
+}
+/*@media(max-width: 768px){
+    .qrImg {
+        width: 35%;
+        height: 35%;
+    }
+}*/
+@media(max-width: 550px) {
+    .qrImg {
+        width: 50%;
+        height: 50%;
+    }
 }
 .btn-download-qr {
     color: #235ce5;
